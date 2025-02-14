@@ -2,7 +2,7 @@
 using loaforcsSoundAPI.LethalCompany.Conditions.Contexts;
 using loaforcsSoundAPI.SoundPacks.Data.Conditions;
 
-namespace loaforcsSoundAPI.LethalCompany.Conditions;
+namespace loaforcsSoundAPI.LethalCompany.Conditions.Player;
 
 [SoundAPICondition("LethalCompany:player:standing_on")]
 public class PlayerStandingOnCondition : Condition<PlayerContext> {

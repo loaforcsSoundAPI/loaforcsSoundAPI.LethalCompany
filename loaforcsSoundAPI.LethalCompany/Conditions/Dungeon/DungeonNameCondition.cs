@@ -4,11 +4,6 @@ using loaforcsSoundAPI.SoundPacks.Data.Conditions;
 namespace loaforcsSoundAPI.LethalCompany.Conditions.Dungeon;
 
 [SoundAPICondition("LethalCompany:dungeon:name")]
-[SoundAPICondition(
-	"LethalCompany:dungeon_name", 
-	true, 
-	"Use 'LethalCompany:dungeon:name' instead. Will be removed on full release."
-)]
 public class DungeonNameCondition : Condition {
 	public string Value { get; internal set; }
 	
