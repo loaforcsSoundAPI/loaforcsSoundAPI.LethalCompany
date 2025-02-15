@@ -22,6 +22,6 @@ target = "BepInEx/plugins/loaforcsSoundAPI_LethalCompany/"
 
 [publish]
 repository = "https://thunderstore.io"
-communities = [ "riskofrain2", ]
+communities = [ "lethal-company", ]
 [publish.categories]
-riskofrain2 = [ "items", "skills", ]
+lethal-company = [ "mods", "tools", "libraries", "audio", "clientside" ]
