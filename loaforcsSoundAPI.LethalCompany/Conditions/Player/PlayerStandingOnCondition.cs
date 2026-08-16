@@ -1,22 +1,38 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using loaforcsSoundAPI.Core.Data;
 using loaforcsSoundAPI.LethalCompany.Conditions.Contexts;
+using loaforcsSoundAPI.LethalCompany.Data;
 using loaforcsSoundAPI.SoundPacks.Data.Conditions;
 
 namespace loaforcsSoundAPI.LethalCompany.Conditions.Player;
 
 [SoundAPICondition("LethalCompany:player:standing_on")]
 public class PlayerStandingOnCondition : Condition<PlayerContext> {
-	public string Value { get; internal set; }
-    
-	protected override bool EvaluateWithContext(PlayerContext context) {
+	public List<FootstepSurfaceContentReference> Value { get; private set; }
+
+	/// <inheritdoc/>
+	public override bool EvaluateWithContext(PlayerContext context) {
 		if (!context.Player) return false;
 
-		return string.Equals(Value, StartOfRound.Instance.footstepSurfaces[context.Player.currentFootstepSurfaceIndex].surfaceTag, StringComparison.InvariantCultureIgnoreCase);
+		return Value.Find(it => it.Value == context.Player.currentFootstepSurfaceIndex) != null;
 	}
-	
-	protected override bool EvaluateFallback(IContext context) {
+
+	/// <inheritdoc/>
+	public override bool EvaluateFallback(IContext context) {
 		if (!GameNetworkManager.Instance) return false;
-		return EvaluateWithContext(new PlayerContext(GameNetworkManager.Instance.localPlayerController));
+		if (!GameNetworkManager.Instance.localPlayerController) return false;
+
+		return EvaluateWithContext(new PlayerContext(context?.Source, GameNetworkManager.Instance.localPlayerController));
 	}
-	// todo: validate
+
+	/// <inheritdoc/>
+	public override List<IValidatable.ValidationResult> Validate() {
+		if (Value == null || Value.Count == 0) {
+			return [
+				new IValidatable.ValidationResult(IValidatable.ResultType.FAIL, $"Value field for one \"LethalCompany:player:standing_on\" condition in SoundPack '{Pack.Name}' is empty or missing!")
+			];
+		}
+
+		return [];
+	}
 }

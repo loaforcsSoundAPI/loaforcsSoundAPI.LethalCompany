@@ -1,31 +1,39 @@
-﻿using System;
-using GameNetcodeStuff;
-using JetBrains.Annotations;
+﻿using System.Collections.Generic;
+using loaforcsSoundAPI.Core.Data;
+using loaforcsSoundAPI.LethalCompany.Conditions.Contexts;
+using loaforcsSoundAPI.LethalCompany.Data;
 using loaforcsSoundAPI.SoundPacks.Data.Conditions;
 
 namespace loaforcsSoundAPI.LethalCompany.Conditions.Player;
 
 [SoundAPICondition("LethalCompany:player:audio_reverb")]
-public class AudioReverbCondition : Condition {
-	public bool? HasEcho { get; private set; } = null;
+[SoundAPICondition("LethalCompany:player:reverb_preset")]
+public class AudioReverbCondition : Condition<PlayerContext> {
+	public List<ReverbPresetContentReference> Value { get; private set; }
 
-	[CanBeNull]
-	public string Name { get; private set; } = null;
-	
-	public override bool Evaluate(IContext context) {
+	/// <inheritdoc/>
+	public override bool EvaluateWithContext(PlayerContext context) {
+		if (!context.Player) return false;
+
+		return Value.Find(it => it.Value == context.Player.reverbPreset) != null;
+	}
+
+	/// <inheritdoc/>
+	public override bool EvaluateFallback(IContext context) {
 		if (!GameNetworkManager.Instance) return false;
-		PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-		if (!player) return false;
-		if (!player.reverbPreset) return false;
-		
-		if (HasEcho != null) {
-			if (HasEcho == player.reverbPreset.hasEcho) return true;
+		if (!GameNetworkManager.Instance.localPlayerController) return false;
+
+		return EvaluateWithContext(new PlayerContext(context?.Source, GameNetworkManager.Instance.localPlayerController));
+	}
+
+	/// <inheritdoc/>
+	public override List<IValidatable.ValidationResult> Validate() {
+		if (Value == null || Value.Count == 0) {
+			return [
+				new IValidatable.ValidationResult(IValidatable.ResultType.FAIL, $"Value field for one \"LethalCompany:player:audio_reverb\" or \"LethalCompany:player:reverb_preset\" condition in SoundPack '{Pack.Name}' is empty or missing!")
+			];
 		}
 
-		if (Name != null) {
-			if (string.Equals(Name, player.reverbPreset.name, StringComparison.InvariantCultureIgnoreCase)) return true;
-		}
-
-		return false;
+		return [];
 	}
 }

@@ -1,25 +1,20 @@
 ﻿using HarmonyLib;
-using loaforcsSoundAPI.LethalCompany.Conditions;
 using loaforcsSoundAPI.LethalCompany.Reporting;
 using loaforcsSoundAPI.Reporting;
-using loaforcsSoundAPI.Core.Util.Extensions;
+using System;
 
 namespace loaforcsSoundAPI.LethalCompany.Patches;
 
 [HarmonyPatch(typeof(StartOfRound))]
 static class StartOfRoundPatch {
-	[HarmonyPrefix, HarmonyPatch(nameof(StartOfRound.EndOfGame)), HarmonyWrapSafe]
-	static void ResetApparatusState() {
-		ApparatusStateCondition.CurrentApparatusPulled = false;
-	}
+	internal static event Action StartOfRoundAwake = delegate { };
 
-	[HarmonyPostfix, HarmonyPatch(nameof(StartOfRound.Awake)), HarmonyWrapSafe]
-	static void ReportFootstepSurfaces() {
-		if(SoundReportHandler.CurrentReport == null) return;
-
-		foreach (FootstepSurface surface in StartOfRound.Instance.footstepSurfaces) {
-			LethalCompanySoundReport.foundFootstepSurfaces.AddUnique(surface);
+	[HarmonyPatch(nameof(StartOfRound.Awake)), HarmonyPostfix]
+	static void ReportFootstepSurfaces(FootstepSurface[] ___footstepSurfaces) {
+		if (SoundReportHandler.CurrentReport != null && ___footstepSurfaces != null) {
+			LethalCompanySoundReport.foundFootstepSurfaces.UnionWith(___footstepSurfaces);
 		}
+		StartOfRoundAwake();
 	}
 
 	// todo

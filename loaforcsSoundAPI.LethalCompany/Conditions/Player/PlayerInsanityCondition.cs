@@ -1,29 +1,18 @@
-﻿using System.Collections.Generic;
-using loaforcsSoundAPI.Core.Data;
-using loaforcsSoundAPI.LethalCompany.Conditions.Contexts;
+﻿using loaforcsSoundAPI.SoundPacks.Data;
 using loaforcsSoundAPI.SoundPacks.Data.Conditions;
 
 namespace loaforcsSoundAPI.LethalCompany.Conditions.Player;
 
 [SoundAPICondition("LethalCompany:player:insanity")]
-public class PlayerInsanityCondition : Condition<PlayerContext> {
-	public string Value { get; internal set; }
-	
-	protected override bool EvaluateWithContext(PlayerContext context) {
-		if(!context.Player) return false;
-		if(context.Player.isPlayerDead) return false;
-		
-		return EvaluateRangeOperator(context.Player.insanityLevel, Value);
-	}
+public class PlayerInsanityCondition : Condition {
+	public RangeOperator<float> Value { get; private set; } = new(float.NegativeInfinity, float.PositiveInfinity);
 
-	protected override bool EvaluateFallback(IContext context) {
+	/// <inheritdoc/>
+	public override bool Evaluate(IContext context) {
 		if (!GameNetworkManager.Instance) return false;
-		return EvaluateWithContext(new PlayerContext(GameNetworkManager.Instance.localPlayerController));
-	}
+		if (!GameNetworkManager.Instance.localPlayerController) return false;
+		if (GameNetworkManager.Instance.localPlayerController.isPlayerDead) return false;
 
-	public override List<IValidatable.ValidationResult> Validate() {
-		if (!ValidateRangeOperator(Value, out IValidatable.ValidationResult result))
-			return [result];
-		return [];
+		return Value.EvaluateRange(GameNetworkManager.Instance.localPlayerController.insanityLevel);
 	}
 }

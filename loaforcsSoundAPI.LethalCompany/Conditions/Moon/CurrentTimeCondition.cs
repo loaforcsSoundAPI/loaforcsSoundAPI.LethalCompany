@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using loaforcsSoundAPI.Core.Data;
+﻿using loaforcsSoundAPI.SoundPacks.Data;
 using loaforcsSoundAPI.SoundPacks.Data.Conditions;
+using UnityEngine.SceneManagement;
 
 namespace loaforcsSoundAPI.LethalCompany.Conditions.Moon;
 
 [SoundAPICondition("LethalCompany:moon:current_time")]
 public class CurrentTimeCondition : Condition {
-    public string Value { get; internal set; }
+    public RangeOperator<float> Value { get; private set; } = new(100.0f, 1080.0f);
 
+    /// <inheritdoc/>
     public override bool Evaluate(IContext context) {
+        if (SceneManager.loadedSceneCount <= 1) return false;
         if (!TimeOfDay.Instance) return false;
-        return false; // todo: do this lol
-    }
-    
-    public override List<IValidatable.ValidationResult> Validate() {
-        if (!ValidateRangeOperator(Value, out IValidatable.ValidationResult result))
-            return [result];
-        return [];
+
+        return Value.EvaluateRange(TimeOfDay.Instance.globalTime);
     }
 }
